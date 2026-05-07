@@ -1,0 +1,157 @@
+#pragma once
+
+#include <QGraphicsScene>
+#include <QGraphicsTextItem>
+#include <QTimer>
+#include <QList>
+#include <QMap>
+#include <QGraphicsSceneWheelEvent>
+#include <QKeyEvent>
+#include "enemy.h"
+#include "towerr.h"
+#include "carditem.h"
+
+class SpellEffectItem;
+
+class GameScene : public QGraphicsScene
+{
+    Q_OBJECT
+
+public:
+    explicit GameScene(QObject *parent = nullptr);
+    ~GameScene();
+
+    void setLevelForMenu(int level);
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void wheelEvent(QGraphicsSceneWheelEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void drawBackground(QPainter *painter, const QRectF &rect) override;
+
+public slots:
+    void addResource();
+    void spawnEnemy();
+    void updateGame();
+    void gameover();
+
+    // 卡牌系统
+    void onCardClicked(CardType type);
+    // 冷却处理
+    void updateCardCooldowns();
+    // 清除法术特效
+    void clearSpellEffects();
+
+signals:
+    void requestBackToMenu();
+
+public:
+    // === 地图网格常量 ===
+    static constexpr int GRID_SIZE = 80;       // 每格80px
+    static constexpr int MAP_COLS = 20;        // 20列
+    static constexpr int MAP_ROWS = 9;         // 9行
+    static constexpr int GAME_AREA_W = 1600;   // 游戏区域宽度
+    static constexpr int GAME_AREA_H = 720;    // 游戏区域高度
+    static constexpr int UI_AREA_H = 180;      // UI区域高度
+    static constexpr int SCENE_W = 1600;       // 场景总宽
+    static constexpr int SCENE_H = 900;        // 场景总高
+    static constexpr int END_Y = 720;          // 敌人到达终点Y坐标
+
+    // 辅助：将网格坐标(col,row)转换为场景像素中心坐标
+    static QPointF gridToScene(int col, int row);
+
+private:
+    // === 定时器 ===
+    QTimer *resourceTimer;
+    QTimer *spawnTimer;
+    QTimer *gameLoopTimer;
+    QTimer *cooldownTimer;
+    QTimer *spellEffectTimer;
+
+    // === 游戏对象 ===
+    QList<Enemy *> enemies;
+    QList<Tower *> towers;
+    QList<SpellEffectItem *> spellEffects;
+
+    // === 卡牌面板 ===
+    QList<CardItem *> cardPanel;
+    QMap<CardType, int> cardCooldowns;   // 冷却剩余 ms
+    QList<CardType> deck;
+    qreal baseCardStartX = 0;
+    qreal cardScrollOffset = 0;
+
+    // === 放置网格 ===
+    QList<QPointF> gridCells;
+    void buildGridCells();
+    QPointF snapToNearestCell(const QPointF &pos) const;
+
+    // === HUD ===
+    QGraphicsTextItem *resourceText = nullptr;
+    QGraphicsTextItem *enemiesReachedText = nullptr;
+    QGraphicsTextItem *waveText = nullptr;
+    QGraphicsTextItem *selectedCardText = nullptr;
+    QGraphicsTextItem *pausedText = nullptr;
+    QGraphicsTextItem *levelText = nullptr;
+
+    // === 暂停状态 ===
+    bool isPaused = false;
+
+    // === 游戏状态 ===
+    int resource = 100;
+    int enemiesReached = 0;
+    int wave = 0;
+    int enemiesSpawned = 0;
+    int enemiesAlive = 0;
+    int totalKills = 0;
+
+    static const int MAX_ENEMIES_REACHED = 15;
+
+    // === 关卡系统 ===
+    int currentLevel = 1;
+    int waveEnemiesCount = 10;        // 当前关卡每波敌人数量
+    int startResource = 100;          // 当前关卡初始圣水
+    QList<int> spawnXList;            // 当前关卡所有出生点X坐标
+    QList<QList<QPointF>> pathsForLevel;  // 当前关卡所有路线
+
+    void setupLevel(int level);
+    void resetGame();
+    const QList<QPointF> &getPathForLaneX(int x) const;
+
+    // === 选中状态 ===
+    CardType selectedCardType;
+    bool hasCardSelected = false;
+
+    // === 内部方法 ===
+    void setupBackground();
+    void setupCardPanel();
+    void setupHUD();
+    void addTower(TowerType type, const QPointF &pos);
+    void castSpell(CardType spellType, const QPointF &pos);
+    bool canPlaceAnything(const QPointF &pos) const;
+    bool isValidGridCell(const QPointF &pos) const;
+
+    // 生成敌人
+    EnemyType randomEnemyType(int laneX = -1) const;
+    int randomLaneX() const;
+    void spawnNextWave();
+
+    // 法术效果
+    void applyFireball(const QPointF &pos);
+    void applyFreeze();
+    void applyLightning();
+
+    // 奖励
+    void addKillReward(int amount);
+
+    // ── 瓦片地图系统 ──
+    QPixmap m_tileGrass;
+    QPixmap m_tileVertical;
+    QPixmap m_tileHorizontal;
+    QPixmap m_tileTurn1, m_tileTurn2, m_tileTurn3, m_tileTurn4;
+    void loadMapTiles();
+    void drawTiledMap(QPainter *painter);
+
+    int m_map1[9][20];   // 关卡1瓦片数据
+    int m_map2[9][20];   // 关卡2瓦片数据
+    int m_map3[9][20];   // 关卡3瓦片数据
+
+};

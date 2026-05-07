@@ -1,0 +1,17 @@
+release/carditem.o
+release/enemy.o
+release/gamescene.o
+release/gameview.o
+release/levelselectui.o
+release/main.o
+release/mainwindow.o
+release/startui.o
+release/towerr.o
+release/qrc_resources.o
+release/moc_carditem.o
+release/moc_gamescene.o
+release/moc_gameview.o
+release/moc_levelselectui.o
+release/moc_mainwindow.o
+release/moc_startui.o
+release/moc_towerr.o

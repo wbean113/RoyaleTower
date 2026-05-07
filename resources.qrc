@@ -1,0 +1,49 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/start_bg.png</file>
+        <file>images/level_select_bg.png</file>
+        <file>images/start_bg1.png</file>
+        <file>assets/grass/grass.png</file>
+        <file>assets/grass/path_horizontal.png</file>
+        <file>assets/grass/path_vertical.png</file>
+        <file>assets/grass/turn_1.png</file>
+        <file>assets/grass/turn_2.png</file>
+        <file>assets/grass/turn_3.png</file>
+        <file>assets/grass/turn_4.png</file>
+    </qresource>
+    <qresource prefix="/tower">
+        <file>assets/atscene/achor_atscene.png</file>
+        <file>assets/atscene/cannon_atscene.png</file>
+        <file>assets/atscene/ice_atscene.png</file>
+        <file>assets/atscene/magic_atscene.png</file>
+    </qresource>
+    <qresource prefix="/cards">
+        <file>cards/achor_card.png</file>
+        <file>cards/cannon_card.png</file>
+        <file>cards/fierball_card.png</file>
+        <file>cards/freeze_card.png</file>
+        <file>cards/ice_card.png</file>
+        <file>cards/lightening_card.png</file>
+        <file>cards/magic_card.png</file>
+    </qresource>
+    <qresource prefix="/enemy">
+        <file>enemies/boss.png</file>
+        <file>enemies/scout.png</file>
+        <file>enemies/soldier.png</file>
+        <file>enemies/tank.png</file>
+    </qresource>
+    <qresource prefix="/effects">
+        <file>hit effects of spells/fireball_effect.png</file>
+        <file>hit effects of spells/freeze_effect.png</file>
+        <file>hit effects of spells/lightening_effect.png</file>
+    </qresource>
+    <qresource prefix="/scene">
+        <file>assets/grass/grass.png</file>
+        <file>assets/grass/path_horizontal.png</file>
+        <file>assets/grass/path_vertical.png</file>
+        <file>assets/grass/turn_1.png</file>
+        <file>assets/grass/turn_2.png</file>
+        <file>assets/grass/turn_3.png</file>
+        <file>assets/grass/turn_4.png</file>
+    </qresource>
+</RCC>

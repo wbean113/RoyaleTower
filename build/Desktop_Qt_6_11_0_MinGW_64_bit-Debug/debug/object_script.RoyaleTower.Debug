@@ -1,0 +1,17 @@
+debug/carditem.o
+debug/enemy.o
+debug/gamescene.o
+debug/gameview.o
+debug/levelselectui.o
+debug/main.o
+debug/mainwindow.o
+debug/startui.o
+debug/towerr.o
+debug/qrc_resources.o
+debug/moc_carditem.o
+debug/moc_gamescene.o
+debug/moc_gameview.o
+debug/moc_levelselectui.o
+debug/moc_mainwindow.o
+debug/moc_startui.o
+debug/moc_towerr.o
