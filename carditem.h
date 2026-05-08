@@ -1,9 +1,9 @@
-#include <QCursor>
 #pragma once
 
 #include <QGraphicsRectItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsSceneMouseEvent>
+#include <QPixmap>
 
 enum class CardType {
     ArrowTower,   // 弓箭塔
@@ -39,6 +39,8 @@ signals:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget) override;
 
 private:
     CardType type;
@@ -47,6 +49,7 @@ private:
     QGraphicsTextItem *nameLabel;
     QGraphicsTextItem *costLabel;
     QGraphicsTextItem *cooldownLabel;
+    QPixmap m_pixmap;
 
     void updateAppearance();
 };

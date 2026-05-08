@@ -2,6 +2,7 @@
 
 #include <QGraphicsEllipseItem>
 #include <QPen>
+#include <QPixmap>
 
 enum class EnemyType {
     Scout,   // 快速/低血量
@@ -33,6 +34,9 @@ public:
     void advanceToNextWaypoint();
     bool hasReachedEnd() const;
 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget) override;
+
 private:
     EnemyType enemyType;
     int hp;
@@ -46,6 +50,8 @@ private:
 
     int slowRemaining = 0;
     int frozenRemaining = 0;
+
+    QPixmap m_pixmap;
 
     void updateAppearance();
 };

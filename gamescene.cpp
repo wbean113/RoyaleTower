@@ -37,24 +37,21 @@ QPointF GameScene::gridToScene(int col, int row)
     return QPointF(col * GRID_SIZE + GRID_SIZE / 2.0,
                    row * GRID_SIZE + GRID_SIZE / 2.0);
 }
-
 // ==================== 关卡路线数据（基于80×80网格，20列×9行） ====================
 
 // 关卡1：三条S型直角路线
-// 左路: col2→col2→col4→col4→col1→col1→col2→col2
 static const QList<QPointF> LEVEL1_PATH_LEFT = {
-    GameScene::gridToScene(2, -1),  // 起点上方 (200, -40)
-    GameScene::gridToScene(2, 0),   // (200, 40)
-    GameScene::gridToScene(2, 2),   // (200, 200) - 直下到row2
-    GameScene::gridToScene(4, 2),   // (360, 200) - 右转
-    GameScene::gridToScene(4, 4),   // (360, 360) - 直下
-    GameScene::gridToScene(4, 5),   // (360, 440) 
-    GameScene::gridToScene(1, 5),   // (120, 440) - 左转
-    GameScene::gridToScene(1, 7),   // (120, 600) - 直下
-    GameScene::gridToScene(2, 7),   // (200, 600) - 右转
-    GameScene::gridToScene(2, 9),   // (200, 760) 终点（row9 = y=720+40）
+    GameScene::gridToScene(2, -1),
+    GameScene::gridToScene(2, 0),
+    GameScene::gridToScene(2, 2),
+    GameScene::gridToScene(4, 2),
+    GameScene::gridToScene(4, 4),
+    GameScene::gridToScene(4, 5),
+    GameScene::gridToScene(1, 5),
+    GameScene::gridToScene(1, 7),
+    GameScene::gridToScene(2, 7),
+    GameScene::gridToScene(2, 9),
 };
-// 中路
 static const QList<QPointF> LEVEL1_PATH_MID = {
     GameScene::gridToScene(10, -1),
     GameScene::gridToScene(10, 0),
@@ -67,7 +64,6 @@ static const QList<QPointF> LEVEL1_PATH_MID = {
     GameScene::gridToScene(10, 7),
     GameScene::gridToScene(10, 9),
 };
-// 右路
 static const QList<QPointF> LEVEL1_PATH_RIGHT = {
     GameScene::gridToScene(17, -1),
     GameScene::gridToScene(17, 0),
@@ -83,45 +79,35 @@ static const QList<QPointF> LEVEL1_PATH_RIGHT = {
 
 // 关卡2：回字型循环路线（单路，绕地图一圈）
 static const QList<QPointF> LEVEL2_PATH = {
-    GameScene::gridToScene(10, -1),   // 起点 (840, -40)
-    GameScene::gridToScene(10, 0),    // (840, 40)
-    GameScene::gridToScene(10, 1),    // (840, 120)
-    GameScene::gridToScene(18, 1),    // (1480, 120) 右转
-    GameScene::gridToScene(18, 8),    // (1480, 680) 直下
-    GameScene::gridToScene(1, 8),     // (120, 680)  左转
-    GameScene::gridToScene(1, 1),     // (120, 120)  直上
-    GameScene::gridToScene(10, 1),    // (840, 120)  右转回中央
-    GameScene::gridToScene(10, 9),    // (840, 760)  终点
+    GameScene::gridToScene(10, -1),
+    GameScene::gridToScene(10, 0),
+    GameScene::gridToScene(10, 1),
+    GameScene::gridToScene(18, 1),
+    GameScene::gridToScene(18, 8),
+    GameScene::gridToScene(1, 8),
+    GameScene::gridToScene(1, 1),
+    GameScene::gridToScene(10, 1),
+    GameScene::gridToScene(10, 9),
 };
 
 // 关卡3：双路汇合路线
-// 左路
 static const QList<QPointF> LEVEL3_PATH_LEFT = {
-    GameScene::gridToScene(3, -1),    // 起点 (280, -40)
+    GameScene::gridToScene(3, -1),
     GameScene::gridToScene(3, 0),
-    GameScene::gridToScene(3, 2),     // (280, 200)
-    GameScene::gridToScene(7, 2),     // (600, 200) 右转
-    GameScene::gridToScene(7, 5),     // (600, 440)
-    GameScene::gridToScene(10, 5),    // (840, 440) 汇合
-    GameScene::gridToScene(10, 9),    // (840, 760) 终点
+    GameScene::gridToScene(3, 2),
+    GameScene::gridToScene(7, 2),
+    GameScene::gridToScene(7, 5),
+    GameScene::gridToScene(10, 5),
+    GameScene::gridToScene(10, 9),
 };
-// 右路
 static const QList<QPointF> LEVEL3_PATH_RIGHT = {
-    GameScene::gridToScene(17, -1),   // 起点 (1400, -40)
+    GameScene::gridToScene(17, -1),
     GameScene::gridToScene(17, 0),
-    GameScene::gridToScene(17, 2),    // (1400, 200)
-    GameScene::gridToScene(13, 2),    // (1080, 200) 左转
-    GameScene::gridToScene(13, 5),    // (1080, 440)
-    GameScene::gridToScene(10, 5),    // (840, 440) 汇合
-    GameScene::gridToScene(10, 9),    // (840, 760) 终点
-};
-// 关卡3合并路线（用于canPlaceAnything和drawBackground补全横向连接）
-static const QList<QPointF> LEVEL3_MERGED = {
-    GameScene::gridToScene(3, 2),    // (280, 200)
-    GameScene::gridToScene(7, 2),    // (600, 200)
-    GameScene::gridToScene(10, 5),   // (840, 440)
-    GameScene::gridToScene(13, 2),   // (1080, 200)
-    GameScene::gridToScene(17, 2),   // (1400, 200)
+    GameScene::gridToScene(17, 2),
+    GameScene::gridToScene(13, 2),
+    GameScene::gridToScene(13, 5),
+    GameScene::gridToScene(10, 5),
+    GameScene::gridToScene(10, 9),
 };
 
 // ==================== 构造函数 ====================
@@ -132,6 +118,9 @@ GameScene::GameScene(QObject *parent)
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
     setSceneRect(0, 0, SCENE_W, SCENE_H);
+
+    // 初始化地图布局数据
+    initMapLayouts();
 
     // 初始化卡组
     deck = {
@@ -147,12 +136,11 @@ GameScene::GameScene(QObject *parent)
         cardCooldowns[ct] = 0;
     }
 
-    // 先创建HUD — 必须在setupLevel之前
+    // 创建HUD和卡牌面板 — 必须在setupLevel之前
     setupBackground();
     setupCardPanel();
-    setupHUD();              // HUD对象全部创建，setupLevel可安全访问
-    loadMapTiles();          // 加载瓦片图片
-    setupLevel(1);           // 加载关卡1
+    setupHUD();
+    setupLevel(1);
 
     // 定时器
     resourceTimer = new QTimer(this);
@@ -228,11 +216,10 @@ void GameScene::setupLevel(int level)
 
     switch (level) {
     case 1: {
-        // 关卡1：三条S型直角路线
         spawnXList = {
-            static_cast<int>(gridToScene(2, 0).x()),   // 200
-            static_cast<int>(gridToScene(10, 0).x()),  // 840
-            static_cast<int>(gridToScene(17, 0).x())   // 1400
+            static_cast<int>(gridToScene(2, 0).x()),
+            static_cast<int>(gridToScene(10, 0).x()),
+            static_cast<int>(gridToScene(17, 0).x())
         };
         waveEnemiesCount = 10;
         startResource = 100;
@@ -243,8 +230,7 @@ void GameScene::setupLevel(int level)
         break;
     }
     case 2: {
-        // 关卡2：回字型单路循环
-        spawnXList = { static_cast<int>(gridToScene(10, 0).x()) };  // 840
+        spawnXList = { static_cast<int>(gridToScene(10, 0).x()) };
         waveEnemiesCount = 12;
         startResource = 120;
 
@@ -252,10 +238,9 @@ void GameScene::setupLevel(int level)
         break;
     }
     case 3: {
-        // 关卡3：双路汇合
         spawnXList = {
-            static_cast<int>(gridToScene(3, 0).x()),   // 280
-            static_cast<int>(gridToScene(17, 0).x())   // 1400
+            static_cast<int>(gridToScene(3, 0).x()),
+            static_cast<int>(gridToScene(17, 0).x())
         };
         waveEnemiesCount = 8;
         startResource = 90;
@@ -293,7 +278,7 @@ void GameScene::setupLevel(int level)
     enemiesSpawned = 0;
     spawnNextWave();
 
-    update();  // 重绘背景路和塔位
+    update();
 }
 
 void GameScene::resetGame()
@@ -507,10 +492,10 @@ void GameScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     QPointF pos = event->scenePos();
     if (pos.y() >= GAME_AREA_H && !cardPanel.isEmpty()) {
-        const int cardWidth = 80;
+        const int cardWidth = 120;
         const int cardSpacing = 24;
         const int totalCards = cardPanel.size();
-        const qreal lastCardRightEdge = baseCardStartX + (totalCards - 1) * (cardWidth + cardSpacing) + 40;
+        const qreal lastCardRightEdge = baseCardStartX + (totalCards - 1) * (cardWidth + cardSpacing) + 60;
         const qreal maxScroll = qMax(0.0, lastCardRightEdge - SCENE_W);
 
         qreal delta = event->delta();
@@ -604,38 +589,44 @@ void GameScene::castSpell(CardType spellType, const QPointF &pos)
     }
 }
 
+// ======================== 网格路径检测（基于地图瓦片数据） ========================
+
+bool GameScene::isPathTile(int col, int row) const
+{
+    if (col < 0 || col >= MAP_COLS || row < 0 || row >= MAP_ROWS)
+        return false;
+
+    const int (*mapLayout)[20] = nullptr;
+    switch (currentLevel) {
+    case 1: mapLayout = m_map1; break;
+    case 2: mapLayout = m_map2; break;
+    case 3: mapLayout = m_map3; break;
+    default: return false;
+    }
+
+    // 所有非0瓦片都代表路径（1-6）
+    return mapLayout[row][col] != 0;
+}
+
 bool GameScene::canPlaceAnything(const QPointF &pos) const
 {
     // 不能在UI区域上放置
     if (pos.y() >= GAME_AREA_H)
         return false;
 
-    // 检查距离所有路线是否太近（基于80px网格，阈值50px）
-    auto tooCloseToPath = [&](const QList<QPointF> &path) -> bool {
-        for (int i = 0; i < path.size() - 1; ++i) {
-            QLineF segment(path[i], path[i + 1]);
-            if (segment.length() < 1.0) continue;
-            QPointF v = segment.p2() - segment.p1();
-            qreal t = QPointF::dotProduct(pos - segment.p1(), v) /
-                      (segment.length() * segment.length());
-            t = qBound(0.0, t, 1.0);
-            QPointF closest = segment.p1() + t * v;
-            if (QLineF(pos, closest).length() < 50.0)
-                return true;
+    // 计算pos所在的网格坐标
+    int col = static_cast<int>(pos.x()) / GRID_SIZE;
+    int row = static_cast<int>(pos.y()) / GRID_SIZE;
+
+    // 检查该格及其8邻域是否有路径（不能放在路径上或紧邻路径）
+    for (int dr = -1; dr <= 1; ++dr) {
+        for (int dc = -1; dc <= 1; ++dc) {
+            if (isPathTile(col + dc, row + dr))
+                return false;
         }
-        return false;
-    };
-
-    for (const QList<QPointF> &path : pathsForLevel) {
-        if (tooCloseToPath(path)) return false;
     }
 
-    // 关卡3额外检查：合并的转角段补全
-    if (currentLevel == 3) {
-        if (tooCloseToPath(LEVEL3_MERGED)) return false;
-    }
-
-    // 不能与已有塔重叠（60px最小间距）
+    // 不能与已有塔重叠（60px最小间距，约0.75个格子）
     for (Tower *t : towers) {
         QPointF diff = pos - t->pos();
         if (diff.manhattanLength() < 60)
@@ -809,7 +800,7 @@ EnemyType GameScene::randomEnemyType(int laneX) const
 int GameScene::randomLaneX() const
 {
     if (spawnXList.isEmpty())
-        return static_cast<int>(gridToScene(10, 0).x());  // 默认col10, 840
+        return static_cast<int>(gridToScene(10, 0).x());
     return spawnXList[std::rand() % spawnXList.size()];
 }
 
@@ -840,8 +831,8 @@ void GameScene::drawBackground(QPainter *painter, const QRectF &rect)
     // UI区域深色底
     painter->fillRect(0, GAME_AREA_H, SCENE_W, UI_AREA_H, QColor(30, 30, 30));
 
-    // 绘制瓦片地图（20×9 = 180个瓦片，每个80×80）
-    drawTiledMap(painter);
+    // 绘制色块地图（20×9 = 180个瓦片，每个80×80）
+    drawColorBlockMap(painter);
 
     // 场景边框
     painter->setPen(QPen(QColor(255, 255, 255, 80), 2));
@@ -916,12 +907,12 @@ void GameScene::setupCardPanel()
     panelBg->setZValue(5);
     addItem(panelBg);
 
-    const int cardWidth = 80;
+    const int cardWidth = 120;
     const int cardSpacing = 24;
     const int totalCards = 7;
     const qreal totalWidth = totalCards * (cardWidth + cardSpacing) - cardSpacing;
     const int startX = static_cast<int>((SCENE_W - totalWidth) / 2.0);
-    const int cardY = GAME_AREA_H + UI_AREA_H / 2 + 5;  // 810 = 720+90+...
+    const int cardY = GAME_AREA_H + UI_AREA_H / 2 + 5;
 
     baseCardStartX = startX;
 
@@ -1024,88 +1015,57 @@ void GameScene::setupHUD()
     addItem(pausedText);
 }
 
-// ======================== 瓦片地图系统 ========================
+// ======================== 色块地图系统（80×80网格，20列×9行） ========================
 
-// 瓦片类型常量
-enum {
-    TILE_GRASS   = 0,  // 草地
-    TILE_VERT    = 1,  // 竖路
-    TILE_HORIZ   = 2,  // 横路
-    TILE_TURN_NE = 3,  // ┌ 北→东 或 东→北
-    TILE_TURN_NW = 4,  // ┐ 北→西 或 西→北
-    TILE_TURN_SE = 5,  // └ 南→东 或 西→南
-    TILE_TURN_SW = 6   // ┘ 南→西 或 东→南
-};
-
-void GameScene::loadMapTiles()
+void GameScene::initMapLayouts()
 {
-    // 加载瓦片图片（使用已修复的资源路径）
-    m_tileGrass.load(":/images/assets/grass/grass.png");
-    m_tileVertical.load(":/images/assets/grass/path_vertical.png");
-    m_tileHorizontal.load(":/images/assets/grass/path_horizontal.png");
-    m_tileTurn1.load(":/images/assets/grass/turn_1.png");
-    m_tileTurn2.load(":/images/assets/grass/turn_2.png");
-    m_tileTurn3.load(":/images/assets/grass/turn_3.png");
-    m_tileTurn4.load(":/images/assets/grass/turn_4.png");
-
     // ── 关卡1：三条S型直角路线 ──
-    // 左路: col2↓→col4→col4↓→col1←col1↓→col2→col2↓
-    // 中路: col10↓→col12→col12↓→col8←col8↓→col10→col10↓
-    // 右路: col17↓→col15←col15↓→col19→col19↓→col17←col17↓
-    {
-        static const int L1[9][20] = {
-            {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0},
-            {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0},
-            {0,0,3,2,5,0,0,0,0,0,3,2,5,0,0,6,2,4,0,0},
-            {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0},
-            {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0},
-            {0,6,2,2,4,0,0,0,6,2,2,2,4,0,0,3,2,2,2,5},
-            {0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
-            {0,3,2,0,0,0,0,0,3,2,2,0,0,0,0,0,0,0,2,4},
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        };
-        memcpy(m_map1, L1, sizeof(m_map1));
-    }
+    static const int L1[9][20] = {
+        {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0},
+        {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0},
+        {0,0,3,2,5,0,0,0,0,0,3,2,5,0,0,6,2,4,0,0},
+        {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0},
+        {0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0},
+        {0,6,2,2,4,0,0,0,6,2,2,2,4,0,0,3,2,2,2,5},
+        {0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
+        {0,3,2,0,0,0,0,0,3,2,2,0,0,0,0,0,0,0,2,4},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    };
+    memcpy(m_map1, L1, sizeof(m_map1));
 
     // ── 关卡2：回字型单路循环 ──
-    {
-        static const int L2[9][20] = {
-            {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
-            {0,5,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,5,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
-            {0,3,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,4,0},
-        };
-        memcpy(m_map2, L2, sizeof(m_map2));
-    }
+    static const int L2[9][20] = {
+        {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
+        {0,5,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,5,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0},
+        {0,3,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,4,0},
+    };
+    memcpy(m_map2, L2, sizeof(m_map2));
 
     // ── 关卡3：双路汇合 ──
-    // 左路: col3↓→col7→col7↓→col10→col10↓
-    // 右路: col17↓→col13←col13↓→col10→col10↓
-    {
-        static const int L3[9][20] = {
-            {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0},
-            {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0},
-            {0,0,0,3,2,2,2,5,0,0,0,0,0,6,2,2,2,4,0,0},
-            {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-            {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-            {0,0,0,0,0,0,0,3,2,2,5,2,2,4,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
-        };
-        memcpy(m_map3, L3, sizeof(m_map3));
-    }
+    static const int L3[9][20] = {
+        {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,3,2,2,2,5,0,0,0,0,0,6,2,2,2,4,0,0},
+        {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,0,0,0,0,3,2,2,5,2,2,4,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
+    };
+    memcpy(m_map3, L3, sizeof(m_map3));
 }
 
-void GameScene::drawTiledMap(QPainter *painter)
+void GameScene::drawColorBlockMap(QPainter *painter)
 {
-    // 根据当前关卡选择地图数据
-    int (*mapLayout)[20] = nullptr;
+    // 选择当前关卡的地图数据
+    const int (*mapLayout)[20] = nullptr;
     switch (currentLevel) {
     case 1: mapLayout = m_map1; break;
     case 2: mapLayout = m_map2; break;
@@ -1113,31 +1073,29 @@ void GameScene::drawTiledMap(QPainter *painter)
     default: mapLayout = m_map1; break;
     }
 
+    // 色块颜色定义
+    static const QColor grassColor(34, 139, 34);      // 草地绿
+    static const QColor pathColor(210, 180, 140);      // 土路褐
+    static const QColor gridLineColor(0, 0, 0, 30);    // 网格线半透明
+
     for (int row = 0; row < MAP_ROWS; ++row) {
         for (int col = 0; col < MAP_COLS; ++col) {
             int tile = mapLayout[row][col];
             int x = col * GRID_SIZE;
             int y = row * GRID_SIZE;
 
-            QPixmap *tilePix = nullptr;
-            switch (tile) {
-            case TILE_GRASS:   tilePix = &m_tileGrass; break;
-            case TILE_VERT:    tilePix = &m_tileVertical; break;
-            case TILE_HORIZ:   tilePix = &m_tileHorizontal; break;
-            case TILE_TURN_NE: tilePix = &m_tileTurn1; break;
-            case TILE_TURN_NW: tilePix = &m_tileTurn2; break;
-            case TILE_TURN_SE: tilePix = &m_tileTurn3; break;
-            case TILE_TURN_SW: tilePix = &m_tileTurn4; break;
-            default: break;
+            if (tile == 0) {
+                // 草地
+                painter->fillRect(x, y, GRID_SIZE, GRID_SIZE, grassColor);
+            } else {
+                // 路径（所有非0瓦片类型）
+                painter->fillRect(x, y, GRID_SIZE, GRID_SIZE, pathColor);
             }
 
-            if (tilePix && !tilePix->isNull()) {
-                painter->drawPixmap(x, y, GRID_SIZE, GRID_SIZE, *tilePix);
-            } else {
-                // 后备颜色
-                painter->fillRect(x, y, GRID_SIZE, GRID_SIZE,
-                    tile == TILE_GRASS ? QColor(34, 139, 34) : QColor(210, 180, 140));
-            }
+            // 绘制网格线（所有格子统一细线）
+            painter->setPen(QPen(gridLineColor, 1));
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(x, y, GRID_SIZE, GRID_SIZE);
         }
     }
 }

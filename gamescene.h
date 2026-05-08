@@ -142,16 +142,12 @@ private:
     // 奖励
     void addKillReward(int amount);
 
-    // ── 瓦片地图系统 ──
-    QPixmap m_tileGrass;
-    QPixmap m_tileVertical;
-    QPixmap m_tileHorizontal;
-    QPixmap m_tileTurn1, m_tileTurn2, m_tileTurn3, m_tileTurn4;
-    void loadMapTiles();
-    void drawTiledMap(QPainter *painter);
-
-    int m_map1[9][20];   // 关卡1瓦片数据
+    // ── 网格地图系统（80×80，20列×9行） ──
+    int m_map1[9][20];   // 关卡1瓦片数据（0=草地, 1-6=路径）
     int m_map2[9][20];   // 关卡2瓦片数据
     int m_map3[9][20];   // 关卡3瓦片数据
+    void initMapLayouts();
+    void drawColorBlockMap(QPainter *painter);
+    bool isPathTile(int col, int row) const;
 
 };
