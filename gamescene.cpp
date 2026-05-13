@@ -315,6 +315,12 @@ void GameScene::setupLevel(int level)
     qDeleteAll(spellEffects);
     spellEffects.clear();
 
+    // 重置 king 状态
+    m_finalWave = 0;
+    m_kingSpawned = false;
+    m_kingAlive = false;
+    m_gameEnded = false;
+
     pathsForLevel.clear();
     spawnXList.clear();
 
@@ -328,6 +334,7 @@ void GameScene::setupLevel(int level)
         };
         waveEnemiesCount = 10;
         startResource = 100;
+        m_finalWave = 0;  // 第一关无 king
 
         pathsForLevel.append(LEVEL1_PATH);
         break;
@@ -339,6 +346,7 @@ void GameScene::setupLevel(int level)
         };
         waveEnemiesCount = 12;
         startResource = 120;
+        m_finalWave = 5;  // 第二关 king1 在波次5
 
         pathsForLevel.append(LEVEL2_PATH_LEFT);
         pathsForLevel.append(LEVEL2_PATH_RIGHT);
@@ -351,6 +359,7 @@ void GameScene::setupLevel(int level)
         };
         waveEnemiesCount = 8;
         startResource = 90;
+        m_finalWave = 5;  // 第三关 king2 在波次5
 
         pathsForLevel.append(LEVEL3_PATH_LEFT);
         pathsForLevel.append(LEVEL3_PATH_RIGHT);
@@ -428,12 +437,19 @@ void GameScene::addResource()
 
 void GameScene::spawnEnemy()
 {
-    if (isPaused) return;
+    if (isPaused || m_gameEnded) return;
 
     if (enemiesSpawned >= waveEnemiesCount) {
+        // 最终波次所有敌人清空后，生成 king
+        if (wave == m_finalWave && !m_kingSpawned && enemies.isEmpty()) {
+            spawnKing();
+        }
         if (enemies.isEmpty()) {
             wave++;
             enemiesSpawned = 0;
+            // 超过最终波次不再出兵
+            if (m_finalWave > 0 && wave > m_finalWave)
+                return;
             spawnNextWave();
         }
         return;
@@ -451,12 +467,74 @@ void GameScene::spawnEnemy()
     enemiesAlive++;
 }
 
+void GameScene::spawnKing()
+{
+    if (m_kingSpawned || m_gameEnded) return;
+
+    EnemyType kingType;
+    if (currentLevel == 2)
+        kingType = EnemyType::king1;
+    else if (currentLevel == 3)
+        kingType = EnemyType::king2;
+    else
+        return;
+
+    int laneX = randomLaneX();
+    const QList<QPointF> &path = getPathForLaneX(laneX);
+    QPointF start = path.first();
+
+    Enemy *king = new Enemy(kingType, start, laneX, path);
+    enemies.append(king);
+    addItem(king);
+    m_kingSpawned = true;
+    m_kingAlive = true;
+    enemiesAlive++;
+}
+
+void GameScene::gamewin()
+{
+    if (m_gameEnded) return;
+    m_gameEnded = true;
+
+    resourceTimer->stop();
+    spawnTimer->stop();
+    gameLoopTimer->stop();
+    cooldownTimer->stop();
+    spellEffectTimer->stop();
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("恭喜通关！");
+    msgBox.setText(QString("恭喜通关！\n\n关卡: %1\n波次: %2\n击杀: %3\n\n你成功击败了Boss！")
+                       .arg(currentLevel)
+                       .arg(wave)
+                       .arg(totalKills));
+    QPushButton *retryBtn = msgBox.addButton("再玩一次", QMessageBox::ActionRole);
+    QPushButton *backBtn = msgBox.addButton("返回关卡选择", QMessageBox::ActionRole);
+    msgBox.setDefaultButton(retryBtn);
+
+    msgBox.exec();
+
+    if (msgBox.clickedButton() == retryBtn) {
+        resourceTimer->start();
+        spawnTimer->start();
+        gameLoopTimer->start();
+        cooldownTimer->start();
+        spellEffectTimer->start();
+        resetGame();
+    } else if (msgBox.clickedButton() == backBtn) {
+        emit requestBackToMenu();
+    }
+}
+
 void GameScene::updateGame()
 {
-    if (isPaused) return;
+    if (isPaused || m_gameEnded) return;
     // 1. 更新敌人状态效果 + 移动 + 到达检测
     for (int i = 0; i < enemies.size(); ++i) {
         Enemy *e = enemies[i];
+
+        // king2 回血
+        e->regenerate(50);
 
         e->updateStatusEffects(50);
 
@@ -468,6 +546,18 @@ void GameScene::updateGame()
         }
 
         if (e->hasReachedEnd()) {
+            // king 到达终点 → 立即失败
+            if (e->isKing()) {
+                enemiesAlive--;
+                m_kingAlive = false;
+                removeItem(e);
+                enemies.removeAt(i);
+                delete e;
+                --i;
+                gameover();
+                return;
+            }
+
             enemiesReached++;
             enemiesAlive--;
             removeItem(e);
@@ -493,6 +583,10 @@ void GameScene::updateGame()
     // 3. 移除死亡敌人 + 发放击杀奖励
     for (int i = 0; i < enemies.size(); ++i) {
         if (enemies[i]->isDead()) {
+            // king 被杀 → 胜利
+            if (enemies[i]->isKing()) {
+                m_kingAlive = false;
+            }
             int reward = enemies[i]->getReward();
             addKillReward(reward);
             totalKills++;
@@ -501,6 +595,22 @@ void GameScene::updateGame()
             delete enemies[i];
             enemies.removeAt(i);
             --i;
+
+            // 如果 king 已死 + 未生成，触发胜利
+            if (m_kingSpawned && !m_kingAlive && m_finalWave > 0) {
+                // 确认场上没有活的 king
+                bool anyKingAlive = false;
+                for (Enemy *e : enemies) {
+                    if (e->isKing()) {
+                        anyKingAlive = true;
+                        break;
+                    }
+                }
+                if (!anyKingAlive) {
+                    gamewin();
+                    return;
+                }
+            }
         }
     }
 
@@ -515,19 +625,28 @@ void GameScene::updateGame()
 
 void GameScene::gameover()
 {
+    if (m_gameEnded) return;
+    m_gameEnded = true;
+
     resourceTimer->stop();
     spawnTimer->stop();
     gameLoopTimer->stop();
     cooldownTimer->stop();
     spellEffectTimer->stop();
 
+    QString msg;
+    if (m_kingSpawned && !m_kingAlive) {
+        // king 被击杀应该是 gamewin，这里只是兜底
+        msg = QString("游戏结束\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+    } else if (m_kingSpawned) {
+        msg = QString("Boss已到达终点！\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+    } else {
+        msg = QString("你输了！\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+    }
+
     QMessageBox msgBox;
     msgBox.setWindowTitle("游戏结束");
-    msgBox.setText(QString("你输了！\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？")
-                       .arg(currentLevel)
-                       .arg(wave)
-                       .arg(totalKills)
-                       .arg(enemiesReached));
+    msgBox.setText(msg.arg(currentLevel).arg(wave).arg(totalKills).arg(enemiesReached));
     QPushButton *retryBtn = msgBox.addButton("重试本关", QMessageBox::ActionRole);
     QPushButton *backBtn = msgBox.addButton("返回关卡选择", QMessageBox::ActionRole);
     msgBox.setDefaultButton(retryBtn);
@@ -535,6 +654,7 @@ void GameScene::gameover()
     msgBox.exec();
 
     if (msgBox.clickedButton() == retryBtn) {
+        m_gameEnded = false;
         resourceTimer->start();
         spawnTimer->start();
         gameLoopTimer->start();
@@ -835,6 +955,7 @@ void GameScene::applyFireball(const QPointF &pos)
     addItem(effect);
 
     for (Enemy *e : enemies) {
+        if (e->isSpellImmune()) continue;
         QPointF diff = e->pos() - pos;
         if (diff.manhattanLength() < radius) {
             e->takeDamage(fireballDamage);
@@ -854,6 +975,7 @@ void GameScene::applyFreeze()
     addItem(effect);
 
     for (Enemy *e : enemies) {
+        if (e->isSpellImmune()) continue;
         e->applyFreeze(freezeDuration);
     }
 }
@@ -866,6 +988,8 @@ void GameScene::applyLightning()
     QList<QPair<qreal, Enemy *>> sorted;
     for (Enemy *e : enemies) {
         if (e->isDead())
+            continue;
+        if (e->isSpellImmune())
             continue;
         qreal dist = GAME_AREA_H - e->pos().y();
         sorted.append(qMakePair(dist, e));

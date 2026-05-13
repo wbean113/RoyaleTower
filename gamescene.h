@@ -113,6 +113,12 @@ private:
 
     static const int MAX_ENEMIES_REACHED = 15;
 
+    // === King/Boss 系统 ===
+    int m_finalWave = 0;           // 当前关卡的最终波次
+    bool m_kingSpawned = false;    // 防止重复生成 king
+    bool m_kingAlive = false;      // king 是否存活
+    bool m_gameEnded = false;      // 游戏已结束（防止重复触发胜负）
+
     // === 关卡系统 ===
     int currentLevel = 1;
     int waveEnemiesCount = 10;        // 当前关卡每波敌人数量
@@ -142,6 +148,8 @@ private:
     EnemyType randomEnemyType(int laneX = -1) const;
     int randomLaneX() const;
     void spawnNextWave();
+    void spawnKing();
+    void gamewin();
 
     // 法术效果
     void applyFireball(const QPointF &pos);

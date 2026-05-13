@@ -23,9 +23,12 @@ public:
     bool isDead() const { return hp <= 0; }
     bool isSlowed() const { return slowRemaining > 0; }
     bool isFrozen() const { return frozenRemaining > 0; }
+    bool isKing() const { return enemyType == EnemyType::king1 || enemyType == EnemyType::king2; }
+    bool isSpellImmune() const { return enemyType == EnemyType::king1; }
     void applySlow(int durationMs);
     void applyFreeze(int durationMs);
     void updateStatusEffects(int deltaMs);
+    void regenerate(int deltaMs);
 
     EnemyType getEnemyType() const { return enemyType; }
     int getLaneX() const { return laneX; }
@@ -54,6 +57,9 @@ private:
 
     int slowRemaining = 0;
     int frozenRemaining = 0;
+    int m_damageFlashRemaining = 0;
+    int m_regenAccumulator = 0;
+    QColor m_hpBarColorOverride;
 
     QPixmap m_pixmap;
 

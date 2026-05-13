@@ -18,24 +18,24 @@ Tower::Tower(TowerType type, const QPointF &pos, int cost)
 
     switch (type) {
     case TowerType::Arrow:
-        range = 120;
+        range = 300;
         damage = 2;
-        attackIntervalMs = 600;
+        attackIntervalMs = 1200;
         break;
     case TowerType::Cannon:
         range = 100;
         damage = 10;
-        attackIntervalMs = 1500;
+        attackIntervalMs = 3000;
         break;
     case TowerType::Ice:
-        range = 110;
+        range = 100;
         damage = 1;
-        attackIntervalMs = 800;
+        attackIntervalMs = 1600;
         break;
     case TowerType::Magic:
         range = 90;
         damage = 4;
-        attackIntervalMs = 1200;
+        attackIntervalMs = 2000;
         break;
     }
 
@@ -186,19 +186,29 @@ void Tower::attack(QList<Enemy *> &enemies)
 
     trailTimer->start(trailDurationMs);
 
-    // === 伤害逻辑（不变） ===
+    // === 伤害逻辑（带魔法AOE距离衰减） ===
     // 魔法塔AOE攻击
     if (towerType == TowerType::Magic) {
-        const int aoeRadius = 50;
+        const int aoeRadius = 250;
+        // 衰减系数：边缘最低保留 30% 伤害
+        const qreal minDamageRate = 0.3;
+
         for (Enemy *e : enemies) {
+            if (!e) continue;
+
             qreal dist = QLineF(pos(), e->pos()).length();
             if (dist <= aoeRadius) {
-                e->takeDamage(damage);
+                // 距离越远，伤害越低；中心点100%，边缘minDamageRate
+                qreal rate = 1.0 - (dist / aoeRadius) * (1.0 - minDamageRate);
+                int finalDmg = qRound(damage * rate);
+                e->takeDamage(finalDmg);
             }
         }
     } else {
         // 单体攻击
-        target->takeDamage(damage);
+        if (target) {
+            target->takeDamage(damage);
+        }
     }
 
     // 冰塔附加减速效果

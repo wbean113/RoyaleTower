@@ -32,6 +32,12 @@ Enemy::Enemy(EnemyType type, const QPointF &startPos, int lane,
     case EnemyType::Boss:
         m_pixmap.load(":/enemy/enemies/boss.png");
         break;
+    case EnemyType::king1:
+        m_pixmap.load(":/enemy/enemies/king1.png");
+        break;
+    case EnemyType::king2:
+        m_pixmap.load(":/enemy/enemies/king2.png");
+        break;
     }
 
     int radius;
@@ -42,19 +48,29 @@ Enemy::Enemy(EnemyType type, const QPointF &startPos, int lane,
         radius = 20;
         break;
     case EnemyType::Soldier:
-        hp = 5;
+        hp = 40;
         baseSpeed = 2.0;
         radius = 24;
         break;
     case EnemyType::Tank:
-        hp = 15;
+        hp = 100;
         baseSpeed = 1.2;
         radius = 32;
         break;
     case EnemyType::Boss:
-        hp = 50;
+        hp = 900;
         baseSpeed = 0.6;
         radius = 40;
+        break;
+    case EnemyType::king1:
+        hp = 3000;
+        baseSpeed = 0.5;
+        radius = 44;
+        break;
+    case EnemyType::king2:
+        hp = 5000;
+        baseSpeed = 0.45;
+        radius = 44;
         break;
     default:
         hp = 5;
@@ -92,7 +108,6 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     // 1. 绘制敌人图片（缩放到矩形内）
     if (!m_pixmap.isNull()) {
         painter->setRenderHint(QPainter::SmoothPixmapTransform);
-        // 使用保存/恢复确保叠加不会影响其他绘制
         painter->save();
         painter->drawPixmap(static_cast<int>(drawRect.x()),
                             static_cast<int>(drawRect.y()),
@@ -109,8 +124,13 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             painter->fillRect(drawRect, QColor(80, 130, 255, 100));
         }
 
-        // 4. 低血量 → 叠加暗色蒙版
-        if (!isDead()) {
+        // 4. king1 受伤闪烁特效（红色高亮）
+        if (m_damageFlashRemaining > 0) {
+            painter->fillRect(drawRect, QColor(255, 40, 40, 120));
+        }
+
+        // 5. 低血量 → 叠加暗色蒙版（king2除外，king2用血条变色代替）
+        if (!isDead() && enemyType != EnemyType::king2) {
             qreal ratio = qreal(hp) / maxHp;
             if (ratio < 0.5) {
                 int alpha = static_cast<int>((1.0 - ratio) * 2.0 * 120);
@@ -126,15 +146,19 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             color = QColor(150, 200, 255);
         } else if (slowRemaining > 0) {
             color = QColor(100, 180, 255);
+        } else if (m_damageFlashRemaining > 0) {
+            color = QColor(255, 100, 100);
         } else {
             switch (enemyType) {
             case EnemyType::Scout:   color = QColor(255, 180, 50);  break;
             case EnemyType::Soldier: color = QColor(220, 60, 60);   break;
             case EnemyType::Tank:    color = QColor(120, 40, 40);   break;
             case EnemyType::Boss:    color = QColor(200, 20, 20);   break;
+            case EnemyType::king1:   color = QColor(180, 20, 180);  break;
+            case EnemyType::king2:   color = QColor(100, 20, 100);  break;
             }
         }
-        if (!isDead()) {
+        if (!isDead() && enemyType != EnemyType::king2) {
             qreal ratio = qreal(hp) / maxHp;
             color = color.darker(100 + int((1.0 - ratio) * 150));
         }
@@ -143,14 +167,24 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->drawEllipse(drawRect);
     }
 
-    // 5. Boss 黄色边框
+    // 6. Boss / King 边框
     if (enemyType == EnemyType::Boss) {
         painter->setBrush(Qt::NoBrush);
         painter->setPen(QPen(Qt::yellow, 2));
-        painter->drawEllipse(rect.adjusted(1, 1, -1, -1));
+        painter->drawEllipse(ellipseRect.adjusted(1, 1, -1, -1));
+    } else if (isKing()) {
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(QColor(180, 60, 200), 3));
+        painter->drawEllipse(ellipseRect.adjusted(1, 1, -1, -1));
+
+        // king2 额外内圈金色
+        if (enemyType == EnemyType::king2) {
+            painter->setPen(QPen(QColor(255, 215, 0), 1.5));
+            painter->drawEllipse(ellipseRect.adjusted(4, 4, -4, -4));
+        }
     }
 
-    // 6. 血量条（显示在敌人头顶）
+    // 7. 血量条（显示在敌人头顶）
     if (!isDead() && hp < maxHp) {
         qreal barWidth = ellipseRect.width();
         qreal barHeight = 5;
@@ -161,7 +195,13 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         // 背景
         painter->fillRect(QRectF(barX, barY, barWidth, barHeight), QColor(60, 60, 60));
         // 血量
-        QColor barColor = ratio > 0.5 ? Qt::green : (ratio > 0.25 ? Qt::yellow : Qt::red);
+        QColor barColor;
+        if (enemyType == EnemyType::king2) {
+            // king2 血条：50%以上橙黄，否则红色
+            barColor = ratio > 0.5 ? QColor(255, 165, 0) : Qt::red;
+        } else {
+            barColor = ratio > 0.5 ? Qt::green : (ratio > 0.25 ? Qt::yellow : Qt::red);
+        }
         painter->fillRect(QRectF(barX, barY, barWidth * ratio, barHeight), barColor);
     }
 }
@@ -184,9 +224,17 @@ void Enemy::moveTowards(const QPointF &target)
 
 void Enemy::takeDamage(int damage)
 {
+    // king2 伤害只收到0.1，（向上取整）
+    if (enemyType == EnemyType::king2) {
+        damage = (damage + 9) / 10;
+    }
     hp -= damage;
     if (hp <= 0) {
         hp = 0;
+    }
+    // king1 受伤闪烁
+    if (enemyType == EnemyType::king1 && damage > 0) {
+        m_damageFlashRemaining = 150;
     }
     updateAppearance();
 }
@@ -222,6 +270,14 @@ void Enemy::updateStatusEffects(int deltaMs)
         }
     }
 
+    // 更新 king1 受伤闪烁
+    if (m_damageFlashRemaining > 0) {
+        m_damageFlashRemaining -= deltaMs;
+        if (m_damageFlashRemaining < 0) {
+            m_damageFlashRemaining = 0;
+        }
+    }
+
     // 重新计算速度
     if (frozenRemaining > 0) {
         speed = 0;
@@ -234,15 +290,32 @@ void Enemy::updateStatusEffects(int deltaMs)
     updateAppearance();
 }
 
+void Enemy::regenerate(int deltaMs)
+{
+    // 仅 king2 回血
+    if (enemyType != EnemyType::king2 || isDead())
+        return;
+    m_regenAccumulator += deltaMs;
+    while (m_regenAccumulator >= 500) {
+        m_regenAccumulator -= 500;
+        if (hp < maxHp) {
+            hp+=40;//hp++
+            updateAppearance();
+        }
+    }
+}
+
 int Enemy::getReward() const
 {
     switch (enemyType) {
-    case EnemyType::Scout:   return 5;
-    case EnemyType::Soldier: return 10;
-    case EnemyType::Tank:    return 25;
-    case EnemyType::Boss:    return 100;
+    case EnemyType::Scout:   return 1;
+    case EnemyType::Soldier: return 2;
+    case EnemyType::Tank:    return 5;
+    case EnemyType::Boss:    return 10;
+    case EnemyType::king1:   return 0;
+    case EnemyType::king2:   return 0;
+    default:                 return 0;
     }
-    return 0;
 }
 
 void Enemy::updateAppearance()
