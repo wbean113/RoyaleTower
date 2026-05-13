@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <algorithm>
 
 // 法术特效
 class SpellEffectItem : public QGraphicsEllipseItem {
@@ -238,7 +239,7 @@ GameScene::GameScene(QObject *parent)
     setupLevel(1);
 
     // 定时器 — 难度影响出兵和回蓝节奏
-    int resourceInterval = (m_difficulty == Difficulty::Easy) ? 1500 : 1800;
+    int resourceInterval = (m_difficulty == Difficulty::Easy) ? 3000 : 5000;
     int spawnInterval = (m_difficulty == Difficulty::Easy) ? 3000 : 2000;
 
     resourceTimer = new QTimer(this);
@@ -367,7 +368,7 @@ void GameScene::setupLevel(int level)
     }
 
     // 重置游戏状态
-    resource = startResource;
+    resource = 0;
     enemiesReached = 0;
     wave = 0;
     enemiesSpawned = 0;
@@ -420,7 +421,7 @@ void GameScene::addResource()
 {
     if (isPaused) return;
     int amount = (m_difficulty == Difficulty::Easy) ? 15 : 12;
-    resource += amount;
+    resource = std::min(resource + amount, 100);
     if (resourceText)
         resourceText->setPlainText(QString("圣水: %1").arg(resource));
 }
@@ -700,7 +701,7 @@ void GameScene::onSellTower(Tower *tower)
 
     // 返还50%圣水
     int refund = tower->getCost() / 2;
-    resource += refund;
+    resource = std::min(resource + refund, 100);
 
     // 更新HUD
     if (resourceText)
@@ -973,7 +974,7 @@ void GameScene::spawnNextWave()
 
 void GameScene::addKillReward(int amount)
 {
-    resource += amount;
+    resource = std::min(resource + amount, 100);
     if (resourceText)
         resourceText->setPlainText(QString("圣水: %1").arg(resource));
 }
@@ -1169,9 +1170,9 @@ void GameScene::initMapLayouts()
         {-1,0,0,0,0,0,0,0,8,1,1,8,0,0,0,0,0,0,0,-1},
         {0,6,2,2,2,2,2,2,2,7,7,2,2,2,2,2,2,2,5,0},
         {0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0},
-        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,-1,1,0},
-        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,-1,1,0},
-        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,-1,1,0},
+        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,0,1,0},
+        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,0,1,0},
+        {0,1,0,-1,-1,-1,-1,-1,0,1,1,0,-1,-1,-1,-1,-1,0,1,0},
         {0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0},
         {0,3,2,2,2,2,2,2,2,7,7,2,2,2,2,2,2,2,4,0},
         {-1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,-1},
