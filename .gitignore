@@ -1,0 +1,11 @@
+# Qt 编译输出文件
+build/
+debug/
+release/
+*.exe
+*.o
+*.obj
+*.pro.user
+*.pro.user.*
+.qmake.stash
+.qtcreator/
