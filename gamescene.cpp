@@ -32,22 +32,21 @@ public:
     }
 };
 
-// ==================== 网格坐标辅助 ====================
+
 // 将网格坐标(col, row)转换为场景像素中心 (col*80+40, row*80+40)
 QPointF GameScene::gridToScene(int col, int row)
 {
     return QPointF(col * GRID_SIZE + GRID_SIZE / 2.0,
                    row * GRID_SIZE + GRID_SIZE / 2.0);
 }
-// ==================== 关卡路线数据（基于80×80网格，20列×9行） ====================
 
-// 关卡1：单条水平直线 (row 4, 从左到右)
+
 static const QList<QPointF> LEVEL1_PATH = {
     GameScene::gridToScene(0, 4),
     GameScene::gridToScene(20, 4),
 };
 
-// 关卡2：回字型循环路线
+
 static const QList<QPointF> LEVEL2_PATH_LEFT = {
     GameScene::gridToScene(9, 0),
     GameScene::gridToScene(9, 1),
@@ -162,7 +161,7 @@ static const QList<QPointF> LEVEL2_PATH_RIGHT = {
 };
 
 
-// 关卡3：Y字型两路汇合（左col3+右col17下行→row5汇合→col10直下）
+
 static const QList<QPointF> LEVEL3_PATH_LEFT = {
     GameScene::gridToScene(3, -1),
     GameScene::gridToScene(3, 0),
@@ -204,7 +203,7 @@ static const QList<QPointF> LEVEL3_PATH_RIGHT = {
     GameScene::gridToScene(10, 9),
 };
 
-// ==================== 构造函数 ====================
+//  构造函数
 
 GameScene::GameScene(QObject *parent)
     : QGraphicsScene(parent)
@@ -316,7 +315,7 @@ void GameScene::setupLevel(int level)
     qDeleteAll(spellEffects);
     spellEffects.clear();
 
-    // 重置 king 状态
+    // 设置 king 状态
     m_finalWave = 0;
     m_kingSpawned = false;
     m_kingAlive = false;
@@ -360,7 +359,7 @@ void GameScene::setupLevel(int level)
         };
         waveEnemiesCount = 15;
         startResource = 0;
-        m_finalWave = 5;  // 第三关 king2 在波次5
+        m_finalWave = 5;  // 第三关 king2 在波次5，一样
 
         pathsForLevel.append(LEVEL3_PATH_LEFT);
         pathsForLevel.append(LEVEL3_PATH_RIGHT);
@@ -425,7 +424,7 @@ const QList<QPointF> &GameScene::getPathForLaneX(int x) const
     return pathsForLevel.first();
 }
 
-// ======================== 游戏主要循环 ========================
+// ======================== 游戏主循环 ========================
 
 void GameScene::addResource()
 {

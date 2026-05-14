@@ -198,7 +198,6 @@ void Tower::attack(QList<Enemy *> &enemies)
 
             qreal dist = QLineF(pos(), e->pos()).length();
             if (dist <= aoeRadius) {
-                // 距离越远，伤害越低；中心点100%，边缘minDamageRate
                 qreal rate = 1.0 - (dist / aoeRadius) * (1.0 - minDamageRate);
                 int finalDmg = qRound(damage * rate);
                 e->takeDamage(finalDmg);
