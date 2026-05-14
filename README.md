@@ -11,13 +11,9 @@
 
 ## 游戏截图
 
-<img width="1584" height="713" alt="图片" src="https://github.com/user-attachments/assets/41aae698-f76f-4055-83fe-ceadef5806cd" />
-
+> *（运行后可将截图放置于此处）*
 
 ---
-## 提交说明
-
-由于中途教给git托管，而本人能力有限，网络环境波动，导致中间大量提交记录遗失。本人已于2026.5.13重建代码仓库，如果需要查看更古早的开发记录，请移步本人的另一仓库 [Tower-Royale](https://github.com/wbean113/Tower-Royale)，其中具备相对更古早一些但是残缺的记录。
 
 ## 游戏简介
 
@@ -31,7 +27,7 @@
 - **6 种敌人**：侦察兵、士兵、坦克、Boss、King Ⅰ、King Ⅱ，各有不同的血量/速度/抗性
 - **波次系统**：每关 3+ 波敌人，波次越高敌人越强
 - **难度选择**：简单 / 困难，影响敌人强度与资源获取速率
-- **动态 BGM**：4 首背景音乐，不支持切换
+- **动态 BGM**：4 首背景音乐，支持切换
 - **暂停/恢复**：空格键暂停，支持中途切换关卡或返回菜单
 
 ---
@@ -150,7 +146,11 @@ sceneY = row × GRID_SIZE + GRID_SIZE / 2
 ### 敌人路径跟随
 沿瓦片路径逐格移动，每帧更新位置。到达路径点切换阈值<1像素。
 
-
+### 火球术范围伤害
+```
+damage = spellDamage × (1 − distance / spellRadius)
+```
+中心伤害最高，边缘衰减至0。
 
 ---
 
@@ -161,7 +161,7 @@ sceneY = row × GRID_SIZE + GRID_SIZE / 2
 | **SpellEffectItem 竞态条件** | `QTimer::singleShot` 异步回调与 `clearSpellEffects()` 同步遍历冲突，导致随机崩溃 | 移除异步回调，改为游戏主循环同步管理生命周期，清理间隔从1000ms优化至100ms |
 | **initMapLayouts 未定义符号** | 地图数组中 `x` 占位符未定义导致编译失败 | 引入 `TILE_DECORATION_RANDOM = -1` 语义常量替换，`drawTileMap()` 添加 `default` 防御分支 |
 
-
+详见 [高级语言程序设计大作业实验报告](./高级语言程序设计大作业实验报告.md)。
 
 ---
 
@@ -173,6 +173,6 @@ sceneY = row × GRID_SIZE + GRID_SIZE / 2
 
 ## 作者
 
-**南开大学 计算机大类 BBDZ**
+**南开大学 计算机大类**
 
 > 本项目为高级语言程序设计课程大作业，旨在实践面向对象程序设计、Qt图形化开发、游戏逻辑架构与单元测试。

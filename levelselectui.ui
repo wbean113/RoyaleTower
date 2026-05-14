@@ -16,8 +16,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>-10</x>
-     <y>-10</y>
+     <x>0</x>
+     <y>0</y>
      <width>1402</width>
      <height>1122</height>
     </rect>
@@ -95,17 +95,17 @@ QPushButton:hover {
     <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_4">
-   <property name="geometry">
-    <rect>
-     <x>150</x>
-     <y>473</y>
-     <width>71</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton {
+   <widget class="QPushButton" name="pushButton_4">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>473</y>
+      <width>71</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
 	gridline-color: rgb(255, 151, 33);
     background-color: transparent;
     border: none;
@@ -113,27 +113,90 @@ QPushButton:hover {
 QPushButton:hover {
     background-color: rgba(255,255,255,20); /* 鼠标悬停轻微高亮，可选 */
 }</string>
-   </property>
-   <property name="text">
-    <string>返回</string>
-   </property>
+    </property>
+    <property name="text">
+     <string>返回</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="difficultyGroup">
+    <property name="geometry">
+     <rect>
+      <x>1050</x>
+      <y>30</y>
+      <width>320</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox {
+    color: white;
+    font: 16px "Microsoft YaHei";
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 120);
+    border: 2px solid rgba(255, 255, 255, 60);
+    border-radius: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 15px;
+    padding: 0 8px;
+}</string>
+    </property>
+    <property name="title">
+     <string>难度选择</string>
+    </property>
+    <widget class="QRadioButton" name="radioHard">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>35</y>
+       <width>120</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QRadioButton {
+    color: white;
+    font: 15px "Microsoft YaHei";
+    font-weight: bold;
+    background: transparent;
+}
+QRadioButton::indicator {
+    width: 22px;
+    height: 22px;
+}</string>
+     </property>
+     <property name="text">
+      <string>普通</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioEasy">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>35</y>
+       <width>120</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QRadioButton {
+    color: white;
+    font: 15px "Microsoft YaHei";
+    font-weight: bold;
+    background: transparent;
+}
+QRadioButton::indicator {
+    width: 22px;
+    height: 22px;
+}</string>
+     </property>
+     <property name="text">
+      <string>简单</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
-  <widget class="QPushButton" name="btnDifficulty">
-   <property name="geometry">
-    <rect>
-     <x>1110</x>
-     <y>710</y>
-     <width>81</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>难度</string>
-   </property>
-  </widget>
- </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
- <connections/>
-</ui>
