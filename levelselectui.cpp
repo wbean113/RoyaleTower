@@ -63,7 +63,7 @@ void LevelSelectUI::closeEvent(QCloseEvent *event)
 void LevelSelectUI::on_btnDifficulty_clicked()
 {
     if (m_isEasy) {
-        // 切困难（深红字 + 透明背景）
+        // 切困难
         m_isEasy = false;
         ui->btnDifficulty->setText("困难");
         ui->btnDifficulty->setStyleSheet(R"(
@@ -84,7 +84,7 @@ void LevelSelectUI::on_btnDifficulty_clicked()
             }
         )");
     } else {
-        // 切简单（深绿字 + 透明背景）
+        // 切简单（
         m_isEasy = true;
         ui->btnDifficulty->setText("简单");
         ui->btnDifficulty->setStyleSheet(R"(

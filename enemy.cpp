@@ -53,7 +53,7 @@ Enemy::Enemy(EnemyType type, const QPointF &startPos, int lane,
         radius = 24;
         break;
     case EnemyType::Tank:
-        hp = 100;
+        hp = 105;
         baseSpeed = 1.2;
         radius = 32;
         break;

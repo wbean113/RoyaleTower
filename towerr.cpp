@@ -19,22 +19,22 @@ Tower::Tower(TowerType type, const QPointF &pos, int cost)
     switch (type) {
     case TowerType::Arrow:
         range = 300;
-        damage = 2;
+        damage = 3;
         attackIntervalMs = 1200;
         break;
     case TowerType::Cannon:
         range = 100;
-        damage = 10;
+        damage = 12;
         attackIntervalMs = 3000;
         break;
     case TowerType::Ice:
         range = 100;
-        damage = 1;
+        damage = 2;
         attackIntervalMs = 1600;
         break;
     case TowerType::Magic:
         range = 90;
-        damage = 4;
+        damage =6;
         attackIntervalMs = 2000;
         break;
     }
@@ -216,7 +216,7 @@ void Tower::attack(QList<Enemy *> &enemies)
         target->applySlow(1500);  // 减速1.5秒
     }
 }
-
+//索敌机制在这里
 Enemy *Tower::findTarget(QList<Enemy *> &enemies) const
 {
     Enemy *bestTarget = nullptr;
@@ -248,13 +248,6 @@ void Tower::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     QPixmap &pix = towerPixmap(towerType);
     if (!pix.isNull()) {
         painter->drawPixmap(-40, -40, 80, 80, pix);
-    }
-
-    // 绘制射程指示圈（冷却时半透明虚线圆）
-    if (!canAttack) {
-        painter->setBrush(Qt::NoBrush);
-        painter->setPen(QPen(QColor(255, 255, 255, 30), 1, Qt::DashLine));
-        painter->drawEllipse(QPointF(0, 0), range, range);
     }
 }
 

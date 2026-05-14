@@ -230,25 +230,25 @@ GameScene::GameScene(QObject *parent)
         CardType::Lightning
     };
     for (CardType ct : deck) {
-        cardCooldowns[ct] = 0;
+        cardCooldowns[ct] = 0;//初始冷却设置为0
     }
 
-    // 创建HUD和卡牌面板 — 必须在setupLevel之前
+    // 创建HUD和卡牌面板 ，在setupLevel之前，防止和瓦片随机化时候冲突
     setupBackground();
     setupCardPanel();
     setupLevel(1);
 
-    // 定时器 — 难度影响出兵和回蓝节奏
+    // 定时器：出兵和回蓝节奏
     int resourceInterval = (m_difficulty == Difficulty::Easy) ? 3000 : 5000;
     int spawnInterval = (m_difficulty == Difficulty::Easy) ? 3000 : 2000;
 
     resourceTimer = new QTimer(this);
     connect(resourceTimer, &QTimer::timeout, this, &GameScene::addResource);
-    resourceTimer->start(resourceInterval);
+    resourceTimer->start(resourceInterval);//资源也就是圣水增长
 
     spawnTimer = new QTimer(this);
     connect(spawnTimer, &QTimer::timeout, this, &GameScene::spawnEnemy);
-    spawnTimer->start(spawnInterval);
+    spawnTimer->start(spawnInterval);//生成定时器
 
     gameLoopTimer = new QTimer(this);
     connect(gameLoopTimer, &QTimer::timeout, this, &GameScene::updateGame);
@@ -256,11 +256,11 @@ GameScene::GameScene(QObject *parent)
 
     cooldownTimer = new QTimer(this);
     connect(cooldownTimer, &QTimer::timeout, this, &GameScene::updateCardCooldowns);
-    cooldownTimer->start(200);
+    cooldownTimer->start(200);//单个卡牌的冷却
 
     spellEffectTimer = new QTimer(this);
     connect(spellEffectTimer, &QTimer::timeout, this, &GameScene::clearSpellEffects);
-    spellEffectTimer->start(1000);
+    spellEffectTimer->start(1000);//特效
 
     // 起始波次
     wave = 1;
@@ -268,6 +268,7 @@ GameScene::GameScene(QObject *parent)
     spawnNextWave();
 }
 
+//构析函数中强制添加
 GameScene::~GameScene()
 {
     // ==== 关卡退出时的强制安全清理顺序 ====
@@ -334,7 +335,7 @@ void GameScene::setupLevel(int level)
         };
         waveEnemiesCount = 10;
         startResource = 100;
-        m_finalWave = 0;  // 第一关无 king
+        m_finalWave = 0;  // 第一关是教程关卡，永远没有尽头
 
         pathsForLevel.append(LEVEL1_PATH);
         break;
@@ -345,7 +346,7 @@ void GameScene::setupLevel(int level)
             static_cast<int>(gridToScene(10, 0).x())
         };
         waveEnemiesCount = 12;
-        startResource = 120;
+        startResource = 0;
         m_finalWave = 5;  // 第二关 king1 在波次5
 
         pathsForLevel.append(LEVEL2_PATH_LEFT);
@@ -357,8 +358,8 @@ void GameScene::setupLevel(int level)
             static_cast<int>(gridToScene(3, 0).x()),
             static_cast<int>(gridToScene(17, 0).x())
         };
-        waveEnemiesCount = 8;
-        startResource = 90;
+        waveEnemiesCount = 15;
+        startResource = 0;
         m_finalWave = 5;  // 第三关 king2 在波次5
 
         pathsForLevel.append(LEVEL3_PATH_LEFT);
@@ -396,7 +397,7 @@ void GameScene::setupLevel(int level)
     if (resourceText)
         resourceText->setPlainText(QString("圣水: %1").arg(resource));
     if (enemiesReachedText)
-        enemiesReachedText->setPlainText(QString("漏掉: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
+        enemiesReachedText->setPlainText(QString("失血: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
     if (levelText)
         levelText->setPlainText(QString("关卡 %1").arg(currentLevel));
 
@@ -424,12 +425,12 @@ const QList<QPointF> &GameScene::getPathForLaneX(int x) const
     return pathsForLevel.first();
 }
 
-// ======================== 游戏循环 ========================
+// ======================== 游戏主要循环 ========================
 
 void GameScene::addResource()
 {
     if (isPaused) return;
-    int amount = (m_difficulty == Difficulty::Easy) ? 15 : 12;
+    int amount = (m_difficulty == Difficulty::Easy) ? 15 : 10;
     resource = std::min(resource + amount, 100);
     if (resourceText)
         resourceText->setPlainText(QString("圣水: %1").arg(resource));
@@ -477,7 +478,7 @@ void GameScene::spawnKing()
     else if (currentLevel == 3)
         kingType = EnemyType::king2;
     else
-        return;
+        return;//第二关出king1，三关看ing2
 
     int laneX = randomLaneX();
     const QList<QPointF> &path = getPathForLaneX(laneX);
@@ -504,11 +505,11 @@ void GameScene::gamewin()
 
     QMessageBox msgBox;
     msgBox.setWindowTitle("恭喜通关！");
-    msgBox.setText(QString("恭喜通关！\n\n关卡: %1\n波次: %2\n击杀: %3\n\n你成功击败了Boss！")
+    msgBox.setText(QString("恭喜通关！\n\n关卡: %1\n波次: %2\n击杀: %3\n\n你成功击败了King！")
                        .arg(currentLevel)
                        .arg(wave)
                        .arg(totalKills));
-    QPushButton *retryBtn = msgBox.addButton("再玩一次", QMessageBox::ActionRole);
+    QPushButton *retryBtn = msgBox.addButton("再来一把", QMessageBox::ActionRole);
     QPushButton *backBtn = msgBox.addButton("返回关卡选择", QMessageBox::ActionRole);
     msgBox.setDefaultButton(retryBtn);
 
@@ -566,7 +567,7 @@ void GameScene::updateGame()
             --i;
 
             if (enemiesReachedText)
-                enemiesReachedText->setPlainText(QString("漏掉: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
+                enemiesReachedText->setPlainText(QString("失血: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
 
             if (enemiesReached >= MAX_ENEMIES_REACHED) {
                 gameover();
@@ -616,7 +617,7 @@ void GameScene::updateGame()
 
     // 4. 更新波次和UI
     if (waveText) {
-        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 存活敌人: %3")
+        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 在场: %3")
                                    .arg(wave)
                                    .arg(totalKills)
                                    .arg(enemiesAlive));
@@ -637,11 +638,11 @@ void GameScene::gameover()
     QString msg;
     if (m_kingSpawned && !m_kingAlive) {
         // king 被击杀应该是 gamewin，这里只是兜底
-        msg = QString("游戏结束\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+        msg = QString("游戏结束\n\n关卡: %1\n波次: %2\n击杀: %3\n失血: %4\n\n重试？");
     } else if (m_kingSpawned) {
-        msg = QString("Boss已到达终点！\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+        msg = QString("king已到达终点！\n\n关卡: %1\n波次: %2\n击杀: %3\n失血: %4\n\n重试？");
     } else {
-        msg = QString("你输了！\n\n关卡: %1\n波次: %2\n击杀: %3\n漏掉: %4\n\n重试？");
+        msg = QString("死在结尾前！\n\n关卡: %1\n波次: %2\n击杀: %3\n失血: %4\n\n重试？");
     }
 
     QMessageBox msgBox;
@@ -712,7 +713,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         int cost = CardItem::getCostFor(selectedCardType);
         resource -= cost;
-        cardCooldowns[selectedCardType] = 5000;
+        cardCooldowns[selectedCardType] = 7000;//冷却设置为5000ms，实际使用算短的//7000ms
 
         if (resourceText)
             resourceText->setPlainText(QString("圣水: %1").arg(resource));
@@ -724,7 +725,6 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     QGraphicsScene::mousePressEvent(event);
 }
-
 void GameScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     QPointF pos = event->scenePos();
@@ -755,7 +755,6 @@ void GameScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 
     event->accept();
 }
-
 
 void GameScene::keyPressEvent(QKeyEvent *event)
 {
@@ -790,7 +789,7 @@ void GameScene::keyPressEvent(QKeyEvent *event)
     }
 
     QGraphicsScene::keyPressEvent(event);
-}
+}//123选关事件。退出esc
 
 void GameScene::onCardClicked(CardType type)
 {
@@ -812,7 +811,7 @@ void GameScene::addTower(TowerType type, const QPointF &pos)
     towers.append(tower);
     connect(tower, &Tower::sellRequested, this, &GameScene::onSellTower);
     addItem(tower);
-}
+}//添加他
 
 void GameScene::onSellTower(Tower *tower)
 {
@@ -852,9 +851,9 @@ void GameScene::castSpell(CardType spellType, const QPointF &pos)
     default:
         break;
     }
-}
+}//放法术的事件
 
-// ======================== 网格路径检测（基于地图瓦片数据） ========================
+// ======================== 网格路径检测（基于地图瓦片） ========================
 
 bool GameScene::isPathTile(int col, int row) const
 {
@@ -888,7 +887,7 @@ bool GameScene::canPlaceAnything(const QPointF &pos) const
     if (isPathTile(col, row))
         return false;
 
-    // 2. 8邻域中至少有一格是路径（塔必须紧邻路径才能放置）
+    // 2. 8邻域中至少有一格是路，塔必须紧邻路径
     bool adjacentToPath = false;
     for (int dr = -1; dr <= 1; ++dr) {
         for (int dc = -1; dc <= 1; ++dc) {
@@ -917,7 +916,7 @@ bool GameScene::canPlaceAnything(const QPointF &pos) const
 
 // ======================== 卡牌冷却 ========================
 
-void GameScene::updateCardCooldowns()
+void GameScene::updateCardCooldowns()//冷却更新
 {
     if (isPaused) return;
     for (auto it = cardCooldowns.begin(); it != cardCooldowns.end(); ++it) {
@@ -947,8 +946,8 @@ void GameScene::updateCardCooldowns()
 //fireball  spell effect
 void GameScene::applyFireball(const QPointF &pos)
 {
-    const int radius = 100;
-    const int fireballDamage = 15;
+    const int radius = 150;
+    const int fireballDamage = 100;
 
     SpellEffectItem *effect = new SpellEffectItem(pos, radius, QColor(255, 100, 0), 300);
     spellEffects.append(effect);
@@ -965,7 +964,7 @@ void GameScene::applyFireball(const QPointF &pos)
 //freeze  spell effect
 void GameScene::applyFreeze()
 {
-    const int freezeDuration = 2000;
+    const int freezeDuration = 4000;
 
     // 场景中心 (800, 360)
     SpellEffectItem *effect = new SpellEffectItem(
@@ -982,15 +981,15 @@ void GameScene::applyFreeze()
 //lightenning  spell effect
 void GameScene::applyLightning()
 {
-    const int lightningDamage = 25;
-    int hitCount = 0;
+    const int lightningDamage = 70;
+    int hitCount = 0;//打击三个，大电
 
     QList<QPair<qreal, Enemy *>> sorted;
     for (Enemy *e : enemies) {
         if (e->isDead())
             continue;
         if (e->isSpellImmune())
-            continue;
+            continue;//免疫
         qreal dist = GAME_AREA_H - e->pos().y();
         sorted.append(qMakePair(dist, e));
     }
@@ -1030,20 +1029,20 @@ void GameScene::clearSpellEffects()
 EnemyType GameScene::randomEnemyType(int laneX) const
 {
     Q_UNUSED(laneX);
-    int r = std::rand() % 100;
+    int r = std::rand() % 100;//随机
 
     if (currentLevel == 1) {
         if (wave <= 2) {
-            return r < 70 ? EnemyType::Scout : EnemyType::Soldier;
-        } else if (wave <= 5) {
+            return r < 70 ? EnemyType::Scout : EnemyType::Soldier;//前两波出1，2级
+        } else if (wave <= 4) {
             if (r < 30) return EnemyType::Scout;
             if (r < 80) return EnemyType::Soldier;
-            return EnemyType::Tank;
+            return EnemyType::Tank;//
         } else {
             if (r < 20) return EnemyType::Scout;
             if (r < 50) return EnemyType::Soldier;
             if (r < 90) return EnemyType::Tank;
-            return EnemyType::Boss;
+            return EnemyType::Boss;//
         }
     } else if (currentLevel == 2) {
         if (wave <= 2) {
@@ -1075,7 +1074,7 @@ EnemyType GameScene::randomEnemyType(int laneX) const
             if (r < 10) return EnemyType::Scout;
             if (r < 30) return EnemyType::Soldier;
             if (r < 70) return EnemyType::Tank;
-            return EnemyType::Boss;
+            return EnemyType::Boss;//进一步提高大怪比例
         }
     }
 }
@@ -1090,7 +1089,7 @@ int GameScene::randomLaneX() const
 void GameScene::spawnNextWave()
 {
     if (waveText)
-        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 存活敌人: %3")
+        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 在场: %3")
                                    .arg(wave)
                                    .arg(totalKills)
                                    .arg(enemiesAlive));
@@ -1127,7 +1126,7 @@ void GameScene::drawBackground(QPainter *painter, const QRectF &rect)
     painter->drawLine(0, GAME_AREA_H, SCENE_W, GAME_AREA_H);
 }
 
-// ── 前景层：在所有 QGraphicsItem 上方绘制暂停覆盖层 ──
+//在所有 QGraphicsItem 上方绘制暂停覆盖层
 void GameScene::drawForeground(QPainter *painter, const QRectF &rect)
 {
     Q_UNUSED(rect);
@@ -1141,9 +1140,9 @@ void GameScene::setupBackground()
     setBackgroundBrush(Qt::NoBrush);
 }
 
-// ======================== 放置网格系统（20×9 = 180格，基于80px间距） ========================
+//放置网格系统（20×9 = 180格，基于80px间距） ，吸附到最近的格子上
 
-void GameScene::buildGridCells()
+void GameScene::buildGridCells()//单元
 {
     gridCells.clear();
 
@@ -1181,18 +1180,18 @@ bool GameScene::isValidGridCell(const QPointF &pos) const
     return gridCells.contains(pos);
 }
 
-// ======================== 卡牌面板（UI区域 y=720~900，180px高） ========================
+//  ==卡牌面板（UI区域 y=720~900，180px高） ==============================
 
 void GameScene::setupCardPanel()
 {
-    // ── 整体面板背景 ──
+    //  整体面板背景
     QGraphicsRectItem *panelBg = new QGraphicsRectItem(0, GAME_AREA_H, SCENE_W, UI_AREA_H);
     panelBg->setBrush(QColor(25, 25, 35, 235));
     panelBg->setPen(QPen(QColor(60, 60, 80), 1.5));
     panelBg->setZValue(4);
     addItem(panelBg);
 
-    // ── 左 HUD 面板 (x=20~400, 全高) ──
+    //  左 HUD 面板 (x=20~400, 全高)
     {
         QGraphicsRectItem *hudPanel = new QGraphicsRectItem(14, GAME_AREA_H + 12, 386, UI_AREA_H - 24);
         hudPanel->setBrush(QColor(40, 40, 55, 180));
@@ -1224,7 +1223,7 @@ void GameScene::setupCardPanel()
 
         // 行2：波次 | 击杀 | 存活
         waveText = new QGraphicsTextItem();
-        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 存活: %3")
+        waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 在场: %3")
                                    .arg(wave).arg(totalKills).arg(enemiesAlive));
         waveText->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
         waveText->setDefaultTextColor(QColor(220, 220, 240));
@@ -1232,9 +1231,9 @@ void GameScene::setupCardPanel()
         waveText->setZValue(6);
         addItem(waveText);
 
-        // 行3：漏掉 + 已选卡牌
+        // 行3：失血
         enemiesReachedText = new QGraphicsTextItem();
-        enemiesReachedText->setPlainText(QString("损失血量: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
+        enemiesReachedText->setPlainText(QString("失血: %1/%2").arg(enemiesReached).arg(MAX_ENEMIES_REACHED));
         enemiesReachedText->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
         enemiesReachedText->setDefaultTextColor(QColor(255, 120, 100));
         enemiesReachedText->setPos(hudX, row3Y);
@@ -1243,7 +1242,7 @@ void GameScene::setupCardPanel()
 
     }
 
-    // ── 右：卡牌行 (起点 x=430, y=730, 7张横向排列，支持滚轮滚动) ──
+    // ── 右：卡牌行 (起点 x=430, y=730, 7张横向排列，不支持滚轮滚动) ──
     const int cardWidth = 120;
     const int cardSpacing = 24;
     const int startX = 520;
@@ -1271,11 +1270,11 @@ void GameScene::setupCardPanel()
     }
 }
 
-// ======================== 色块地图系统（80×80网格，20列×9行） ========================
+// ============= 色块地图系统 ===================
 
 void GameScene::initMapLayouts()
 {
-    // ── 关卡1：单条水平直线 (row 4 全路径) ──
+    //  关卡1：单条水平直线 (row 4 全路径)
     static const int L1[9][20] = {
         {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
         {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -1289,7 +1288,7 @@ void GameScene::initMapLayouts()
     };
     memcpy(m_templateMap1, L1, sizeof(m_templateMap1));
 
-    // ── 关卡2：回字型单路循环 ──
+    //  关卡2：回字型单路循环
     static const int L2[9][20] = {
         {-1,0,0,0,0,0,0,0,8,1,1,8,0,0,0,0,0,0,0,-1},
         {0,6,2,2,2,2,2,2,2,7,7,2,2,2,2,2,2,2,5,0},
@@ -1303,7 +1302,7 @@ void GameScene::initMapLayouts()
     };
     memcpy(m_templateMap2, L2, sizeof(m_templateMap2));
 
-    // ── 关卡3：双路汇合 ──
+    //  关卡3：双路汇合
     static const int L3[9][20] = {
         {-1,-1,8,1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,8,1,0,-1},
         {-1,-1,0,1,0,0,0,0,-1,-1,-1,-1,-1,0,0,0,0,1,0,-1},
@@ -1331,7 +1330,7 @@ void GameScene::randomizeMapDecorations(int level)
     }
 
     // 选择当前关卡的地图数据
-    int (*mapLayout)[20] = nullptr;
+    int (*mapLayout)[20] = nullptr;//建立指针数组指向当前
     switch (level) {
     case 1: mapLayout = m_map1; break;
     case 2: mapLayout = m_map2; break;
@@ -1445,12 +1444,13 @@ void GameScene::drawPauseOverlay(QPainter *painter)
     painter->drawText(titleRect, Qt::AlignHCenter | Qt::AlignVCenter, "PAUSED");
 
     // 操作提示
-    QFont hintFont("Microsoft YaHei", 14);
+    QFont hintFont("Microsoft YaHei", 11);
     painter->setFont(hintFont);
     painter->setPen(QColor(200, 200, 200, 200));
     QRectF hintRect(panelX, panelY + 110, panelW, 200);
     painter->drawText(hintRect, Qt::AlignHCenter | Qt::AlignTop,
         "按 空格键 继续游戏\n\n"
         "按 1/2/3 切换关卡\n"
-        "按 Esc 返回主菜单");
+        "按 Esc 返回主菜单\n"
+        "king死去获胜");
 }
