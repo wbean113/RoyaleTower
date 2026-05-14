@@ -178,7 +178,7 @@ void Enemy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->drawEllipse(ellipseRect.adjusted(1, 1, -1, -1));
 
         // king2 额外内圈金色
-        if (enemyType == EnemyType::king2) {
+        if (enemyType == EnemyType::king2 || enemyType == EnemyType::king1) {
             painter->setPen(QPen(QColor(255, 215, 0), 1.5));
             painter->drawEllipse(ellipseRect.adjusted(4, 4, -4, -4));
         }
@@ -224,8 +224,8 @@ void Enemy::moveTowards(const QPointF &target)
 
 void Enemy::takeDamage(int damage)
 {
-    // king2 伤害只收到0.1，（向上取整）
-    if (enemyType == EnemyType::king2) {
+    // king1 伤害只收到0.1，（向上取整）
+    if (enemyType == EnemyType::king1) {
         damage = (damage + 9) / 10;
     }
     hp -= damage;
@@ -299,7 +299,7 @@ void Enemy::regenerate(int deltaMs)
     while (m_regenAccumulator >= 500) {
         m_regenAccumulator -= 500;
         if (hp < maxHp) {
-            hp+=40;//hp++
+            hp+=15;//hp++
             updateAppearance();
         }
     }
