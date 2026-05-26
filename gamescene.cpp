@@ -783,6 +783,40 @@ void GameScene::keyPressEvent(QKeyEvent *event)
         emit requestBackToMenu();
         break;
 
+    // 作弊快捷键（用于演示）
+    case Qt::Key_Q: {
+        // 立即获得100圣水
+        if (m_gameEnded) break;
+        resource = 100;
+        if (resourceText)
+            resourceText->setPlainText(QString("圣水: %1").arg(resource));
+        break;
+    }
+    case Qt::Key_W: {
+        // 立即进入King战斗（仅第2、3关有效）
+        if (m_gameEnded || currentLevel < 2) break;
+        if (m_kingSpawned) break;
+        // 跳到最终波次并立即生成King
+        wave = m_finalWave;
+        enemiesSpawned = waveEnemiesCount;
+        spawnKing();
+        if (waveText)
+            waveText->setPlainText(QString("波次: %1 | 击杀: %2 | 在场: %3")
+                                       .arg(wave)
+                                       .arg(totalKills)
+                                       .arg(enemiesAlive));
+        break;
+    }
+    case Qt::Key_E: {
+        // 立即杀死在场所有敌人
+        if (m_gameEnded) break;
+        for (int i = enemies.size() - 1; i >= 0; --i) {
+            Enemy *e = enemies[i];
+            e->takeDamage(99999);
+        }
+        break;
+    }
+
     default:
         break;
     }
